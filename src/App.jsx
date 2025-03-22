@@ -26,7 +26,8 @@ const TOPICS = {
   ch4: "esp32/gas/ch4",
   bmpTemp: "esp32/bmp280/temp",
   bmpPresion: "esp32/bmp280/presion",
-  ubicacion: "esp32/ubicacion"
+  ubicacion: "esp32/ubicacion",
+  prediction: "esp32/model/prediction"
 };
 
 function App() {
@@ -51,7 +52,8 @@ function App() {
     ch4: "---",
     bmpTemp: "---",
     bmpPresion: "---",
-    ubicacion: null
+    ubicacion: null,
+    prediction: "---"
   });
 
   useEffect(() => {
@@ -78,7 +80,6 @@ function App() {
               updated[key] = value;
             }
           }
-          
         }
         return updated;
       });
@@ -135,6 +136,7 @@ function App() {
         <SensorCard title="☀️ UV estimado" value={`${data.uvPower} µW/cm²`} color="#8e44ad" subtitle="Waveshare UV (200–370 nm)" />
         <SensorCard title="🎤 Sonido crudo (ADC)" value={data.soundRaw} subtitle="Sensor KY-037" />
         <SensorCard title="🔊 Nivel de sonido" value={`${data.soundDB} dB`} color="#2c3e50" subtitle="Sensor KY-037 (no calibrado)" />
+        <SensorCard title="🧠 Predicción del modelo" value={data.prediction} color="#d35400" subtitle="Modelo de clasificación en ESP32" />
       </div>
 
       <h2>🔗 Sensores Externos (Arduino)</h2>
