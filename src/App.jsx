@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import mqtt from "mqtt";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 // 🔹 Configuración de topics MQTT
 const MQTT_BROKER = "wss://test.mosquitto.org:8081/mqtt";
@@ -23,7 +25,8 @@ const TOPICS = {
   nh3: "esp32/gas/nh3",
   ch4: "esp32/gas/ch4",
   bmpTemp: "esp32/bmp280/temp",
-  bmpPresion: "esp32/bmp280/presion"
+  bmpPresion: "esp32/bmp280/presion",
+  ubicacion: "esp32/ubicacion"
 };
 
 function App() {
@@ -47,7 +50,8 @@ function App() {
     nh3: "---",
     ch4: "---",
     bmpTemp: "---",
-    bmpPresion: "---"
+    bmpPresion: "---",
+    ubicacion: null
   });
 
   useEffect(() => {
@@ -63,8 +67,18 @@ function App() {
         const updated = { ...prev };
         for (const key in TOPICS) {
           if (TOPICS[key] === topic) {
-            updated[key] = value;
+            if (key === "ubicacion") {
+              try {
+                const [lat, lon] = value.split(",").map(parseFloat);
+                updated[key] = { lat, lon };
+              } catch (err) {
+                console.error("❌ Error procesando ubicación:", value);
+              }
+            } else {
+              updated[key] = value;
+            }
           }
+          
         }
         return updated;
       });
@@ -94,6 +108,20 @@ function App() {
     <div style={{ fontFamily: "Arial", padding: "20px", maxWidth: "1200px", margin: "auto", backgroundColor: "#1e1e1e", color: "#eee" }}>
       <h1 style={{ textAlign: "center" }}>🌡️ Monitor IoT - Sensores Ambientales</h1>
       <p style={{ textAlign: "center" }}>📡 Datos en tiempo real desde MQTT</p>
+
+      {data.ubicacion && (
+        <div style={{ height: "400px", margin: "20px 0", borderRadius: "10px", overflow: "hidden" }}>
+          <MapContainer center={[data.ubicacion.lat, data.ubicacion.lon]} zoom={13} style={{ height: "100%", width: "100%" }}>
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker position={[data.ubicacion.lat, data.ubicacion.lon]}>
+              <Popup>📍 Ubicación estimada de la ESP32</Popup>
+            </Marker>
+          </MapContainer>
+        </div>
+      )}
 
       <h2>🌐 Sensores Locales (ESP32)</h2>
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
